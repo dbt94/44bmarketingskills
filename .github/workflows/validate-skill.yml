@@ -4,12 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - "skills/**"
+      - "**/SKILL.md"
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
     paths:
-      - "skills/**"
+      - "**/SKILL.md"
 
 concurrency:
   group: validate-skill-${{ github.ref }}
@@ -38,11 +37,11 @@ jobs:
             HEAD=${{ github.event.after }}
           fi
 
-          # Find skill directories with any changed file (skip deleted skills)
+          # Find changed SKILL.md files and extract skill directories
           SKILLS=$(git diff --name-only $BASE $HEAD | \
-            grep -oE '^skills/[^/]+' | \
+            grep 'SKILL.md$' | \
+            xargs -I {} dirname {} | \
             sort -u | \
-            while read -r d; do if [ -f "$d/SKILL.md" ]; then echo "$d"; fi; done | \
             jq -R -s -c 'split("\n") | map(select(length > 0))')
 
           echo "skills=$SKILLS" >> $GITHUB_OUTPUT
